@@ -1,12 +1,16 @@
-import express, { Express, Request, Response } from 'express'
+import express from 'express'
 
-const app: Express = express()
-const port = process.env.PORT || 3000
+import usersRouter from '@/routes/users.routes'
+import databaseService from '@/services/database.services'
+import { defaultErrorHandler } from '@/middlewares/error.middlewares'
 
-app.get('/', (_, res: Response) => {
-  res.send('Express + TypeScript Server')
-})
+databaseService.connect()
+const app = express()
+const port = 8080
 
-app.listen(port, () => {
-  console.log(`[server]: Server is running at http://localhost:${port}`)
-})
+app.use(express.json())
+
+app.use('/users', usersRouter)
+app.use(defaultErrorHandler)
+
+app.listen(port, () => console.log(`[server]: Server is running at http://localhost:${port}`))
