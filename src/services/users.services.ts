@@ -1,49 +1,44 @@
+import { ObjectId } from 'mongodb'
+
 import databaseService from '@/services/database.services'
 
 import User from '@/models/schemas/User.schema'
 import { IRegisterReqBody } from '@/models/requests/User.requests'
 import { hashPassword } from '@/utils/crypto'
-import { TokenType, UserVerifyStatus } from '@/constants/enums'
+import { TokenType } from '@/constants/enums'
 import { signToken } from '@/utils/jwt'
+import RefreshToken from '@/models/schemas/RefreshToken.schema'
+import { envConfig } from '@/constants/config'
 
 class UsersService {
-  private signAccessToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
+  private signAccessToken(user_id: string) {
     return signToken({
       payload: {
         user_id,
-        token_type: TokenType.AccessToken,
-        verify
+        token_type: TokenType.AccessToken
       },
-      privateKey: process.env.TOKEN_SECRET!,
+      privateKey: envConfig.jwtSecretAccessToken,
       options: {
-        expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN
+        expiresIn: envConfig.accessTokenExpiresIn
       }
     })
   }
 
-  private signRefreshToken({ user_id, verify, exp }: { user_id: string; verify: UserVerifyStatus; exp?: number }) {
-    if (exp) {
-      return signToken({
-        payload: {
-          user_id,
-          token_type: TokenType.RefreshToken,
-          verify,
-          exp
-        },
-        privateKey: process.env.TOKEN_SECRET!
-      })
-    }
+  private signRefreshToken(user_id: string) {
     return signToken({
       payload: {
         user_id,
-        token_type: TokenType.RefreshToken,
-        verify
+        token_type: TokenType.AccessToken
       },
-      privateKey: process.env.TOKEN_SECRET!,
+      privateKey: envConfig.jwtSecretRefreshToken,
       options: {
-        expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN
+        expiresIn: envConfig.refreshTokenExpiresIn
       }
     })
+  }
+
+  private signAccessAndRefreshToken(user_id: string) {
+    return Promise.all([this.signAccessToken(user_id), this.signRefreshToken(user_id)])
   }
 
   async register(payload: IRegisterReqBody) {
@@ -55,17 +50,25 @@ class UsersService {
       })
     )
 
-    const user_id = result.insertedId.toString()
-    const [access_token, refresh_token] = await Promise.all([
-      this.signAccessToken({ user_id, verify: UserVerifyStatus.Unverified }),
-      this.signRefreshToken({ user_id, verify: UserVerifyStatus.Unverified })
-    ])
+    return result
+  }
+
+  async login(user_id: string) {
+    const [access_token, refresh_token] = await this.signAccessAndRefreshToken(user_id)
+
+    await databaseService.refreshTokens.insertOne(
+      new RefreshToken({ user_id: new ObjectId(user_id), token: refresh_token })
+    )
 
     return {
-      ...result,
       access_token,
       refresh_token
     }
+  }
+
+  async logout(refresh_token: string) {
+    const result = await databaseService.refreshTokens.deleteOne({ token: refresh_token })
+    return result
   }
 
   async checkEmailExist(email: string) {

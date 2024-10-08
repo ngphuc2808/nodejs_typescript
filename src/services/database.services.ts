@@ -1,18 +1,17 @@
 import { MongoClient, Db, Collection } from 'mongodb'
-import dotenv from 'dotenv'
 
 import User from '@/models/schemas/User.schema'
-
-dotenv.config()
+import RefreshToken from '@/models/schemas/RefreshToken.schema'
+import { envConfig } from '@/constants/config'
 
 class DatabaseService {
   private client: MongoClient
   private db: Db
-  private uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@expresstypescript.0lhru.mongodb.net/?retryWrites=true&w=majority&appName=ExpressTypescript`
+  private uri = `mongodb+srv://${envConfig.dbUsername}:${envConfig.dbPassword}@expresstypescript.0lhru.mongodb.net/?retryWrites=true&w=majority&appName=ExpressTypescript`
 
   constructor() {
     this.client = new MongoClient(this.uri)
-    this.db = this.client.db(process.env.DB_NAME)
+    this.db = this.client.db(envConfig.dbName)
   }
 
   async connect() {
@@ -25,7 +24,11 @@ class DatabaseService {
   }
 
   get users(): Collection<User> {
-    return this.db.collection(process.env.DB_USERS_COLLECTION!)
+    return this.db.collection(envConfig.dbUsersCollection)
+  }
+
+  get refreshTokens(): Collection<RefreshToken> {
+    return this.db.collection(envConfig.dbRefreshTokensCollection)
   }
 }
 

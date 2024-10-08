@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
-
-import HTTP_STATUS from '@/constants/httpStatus'
-import { ErrorWithStatus } from '@/models/Errors'
 import { omit } from 'lodash'
+
+import { ErrorWithStatus } from '@/models/Errors'
+import HTTP_STATUS from '@/constants/httpStatus'
 
 export const defaultErrorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
   try {

@@ -1,5 +1,6 @@
-import { USERS_MESSAGES } from '@/constants/messages'
 import { ParamSchema } from 'express-validator'
+
+import { USERS_MESSAGES } from '@/constants/messages'
 
 export const nameSchema: ParamSchema = {
   notEmpty: {
