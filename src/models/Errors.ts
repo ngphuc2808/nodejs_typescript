@@ -5,9 +5,10 @@ type ErrorsType = Record<
   string,
   {
     msg: string
-    [key: string]: any
+    [key: string]: unknown
   }
 >
+
 export class ErrorWithStatus {
   message: string
   status: number

@@ -7,7 +7,7 @@ import { envConfig } from '@/constants/config'
 class DatabaseService {
   private client: MongoClient
   private db: Db
-  private uri = `mongodb+srv://${envConfig.dbUsername}:${envConfig.dbPassword}@expresstypescript.0lhru.mongodb.net/?retryWrites=true&w=majority&appName=ExpressTypescript`
+  private uri = envConfig.dbURL
 
   constructor() {
     this.client = new MongoClient(this.uri)

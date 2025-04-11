@@ -26,9 +26,8 @@ export const isProduction = env === 'production'
 
 export const envConfig = {
   port: process.env.PORT!,
+  dbURL: process.env.DB_URL!,
   dbName: process.env.DB_NAME!,
-  dbUsername: process.env.DB_USERNAME!,
-  dbPassword: process.env.DB_PASSWORD!,
   jwtSecretAccessToken: process.env.JWT_SECRET_ACCESS_TOKEN!,
   jwtSecretRefreshToken: process.env.JWT_SECRET_REFRESH_TOKEN!,
   dbTweetsCollection: process.env.DB_TWEETS_COLLECTION!,
